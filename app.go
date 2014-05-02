@@ -176,5 +176,5 @@ func (app *App) parseContactDeveloper(sel *goquery.Selection) {
 }
 
 func isValidApp(document *playStoreDocument) bool {
-	return document.Find("title").First().Text() == "Not Found"
+	return document.Find("title").First().Text() != "Not Found"
 }
