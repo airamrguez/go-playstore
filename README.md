@@ -26,7 +26,8 @@ func main() {
     httpGet := func(url *url.URL) (*http.Response, error) {
         return http.Get(url)
     }
-    app, err := playstore.MultiLookUp(httpGet, "com.king.candycrushsaga", ["es"])
+    // English content is always fetched.
+    app, err := playstore.MultiLookUp(httpGet, "com.king.candycrushsaga", ["es", "fr"])
     if err != nil {
         panic(err)
     }
