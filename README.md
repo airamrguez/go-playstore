@@ -1,7 +1,7 @@
 # Google PlayStore
 A package to query the _Google Play Store_.
 
-[![build status](https://secure.travis-ci.org/airamrguez/go-playstore)](http://travis-ci.org/airamrguez/go-playstore)
+[![build status](https://travis-ci.org/airamrguez/go-playstore.svg)](http://travis-ci.org/airamrguez/go-playstore)
 **NOTE**: This project is a work in progress.
 
 ## Installation
