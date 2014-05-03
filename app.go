@@ -69,7 +69,6 @@ type Developer struct {
 
 type App struct {
 	AppSlug
-	Author           string            `json:"author"`
 	Category         string            `json:"category"`
 	OffersInApp      bool              `json:"offers_inapp"`
 	Rating           map[string]int64  `json:"rating"`
@@ -105,6 +104,7 @@ func parseApp(document *playStoreDocument, lang string) (*App, error) {
 	app.parseMetaInfo(document)
 	app.parseDescription(document, lang)
 	app.parseScreenshotUrls(document)
+	app.parseDeveloperName(document)
 	app.parseCategory(document)
 	app.parseRating(document)
 	return app, nil
@@ -184,8 +184,12 @@ func (app *App) parseScreenshotUrls(document *playStoreDocument) {
 	})
 }
 
-func (app *App) parseCategory(document *playStoreDocument) {
+func (app *App) parseDeveloperName(document *playStoreDocument) {
 	app.Category = strings.TrimSpace(document.Find(`.category`).Find(`[itemprop="genre"]`).First().Text())
+}
+
+func (app *App) parseCategory(document *playStoreDocument) {
+	app.Developer.Name = strings.TrimSpace(document.Find(`.document-subtitle.primary`).Find(`[itemprop="name"]`).First().Text())
 }
 
 func (app *App) parseRating(document *playStoreDocument) {
