@@ -14,6 +14,7 @@ type playStoreDocument struct {
 
 const ENDPOINT = "play.google.com/store"
 
+// Constructs a new document wrapping goquery.document
 func NewPlayStoreDocument(response *http.Response) (*playStoreDocument, error) {
 	document, err := goquery.NewDocumentFromResponse(response)
 	if err != nil {

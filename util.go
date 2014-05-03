@@ -15,3 +15,11 @@ func ParseInteger(num string) int64 {
 	}
 	return pNum
 }
+
+func ParseFloat(num string) float64 {
+	n, err := strconv.ParseFloat(num, 32)
+	if err != nil {
+		return -1
+	}
+	return n
+}

@@ -2,33 +2,88 @@ package playstore
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
+type DeveloperSlug struct {
+	Name string `json:"name"`
+}
+
+type AppSlug struct {
+	Title         string        `json:"title"`
+	Icon          string        `json:"icon"`
+	AverageRating float64       `json:"average_rating"`
+	Developer     DeveloperSlug `json:"developer"`
+	Price         string        `json:"price"`
+}
+
+func NewAppSlug() *AppSlug {
+	app := &AppSlug{}
+	app.Developer = DeveloperSlug{}
+	return app
+}
+
+func parseAppSlug(sel *goquery.Selection) (*AppSlug, error) {
+	app := NewAppSlug()
+	app.parseTitle(sel)
+	app.parseIcon(sel)
+	app.parseAverageRating(sel)
+	app.parsePrice(sel)
+	return app, nil
+}
+
+func (app *AppSlug) parseTitle(sel *goquery.Selection) {
+	app.Title = strings.TrimSpace(sel.Find(`.title`).First().Text())
+}
+
+func (app *AppSlug) parseIcon(sel *goquery.Selection) {
+	if icon, ok := sel.Find(`.cover-image`).First().Attr("src"); ok {
+		app.Icon = icon
+	}
+}
+
+func (app *AppSlug) parseDeveloper(sel *goquery.Selection) {
+	app.Developer.Name = strings.TrimSpace(sel.Find(`.subtitle`).First().Text())
+}
+
+func (app *AppSlug) parseAverageRating(sel *goquery.Selection) {
+	width, ok := sel.Find(`.current-rating`).First().Attr("style")
+	if !ok {
+		return
+	}
+	re := regexp.MustCompile(`width:\s*([0-9.]+)%`)
+	app.AverageRating = ParseFloat(re.ReplaceAllString(width, "$1"))
+}
+
+func (app *AppSlug) parsePrice(sel *goquery.Selection) {
+	app.Price = strings.TrimSpace(sel.Find(`.price-container button.price`).First().Text())
+}
+
+type Developer struct {
+	DeveloperSlug
+	Email   string `json:"email"`
+	Website string `json:"website"`
+}
+
 type App struct {
-	Title                string            `json:"title"`
-	Author               string            `json:"author"`
-	Category             string            `json:"category"`
-	OffersInApp          bool              `json:"offersInApp"`
-	AverageRating        float64           `json:"averageRating"`
-	Rating               map[string]int64  `json:"rating"`
-	Reviews              int64             `json:"reviews"`
-	ScreenshotUrls       []string          `json:"screenshotUrls"`
-	TabletScreenshotUrls []string          `json:"tabletScreenshotUrls"`
-	Updated              string            `json:"updated"`
-	Version              string            `json:"version"`
-	Price                float64           `json:"price"`
-	Size                 string            `json:"size"`
-	RequiresAndroid      string            `json:"requiresAndroid"`
-	ContentRating        string            `json:"contentRating"`
-	Installs             string            `json:"installs"`
-	PlainDescription     map[string]string `json:"plainDescription"`
-	HtmlDescription      map[string]string `json:"htmlDescription"`
-	Developer            struct {
-		Email   string `json:"email"`
-		Website string `json:"website"`
-	} `json:"developer"`
+	AppSlug
+	Author           string            `json:"author"`
+	Category         string            `json:"category"`
+	OffersInApp      bool              `json:"offers_inapp"`
+	Rating           map[string]int64  `json:"rating"`
+	Reviews          int64             `json:"reviews"`
+	ScreenshotUrls   []string          `json:"screenshot_urls"`
+	Updated          string            `json:"updated"`
+	Version          string            `json:"version"`
+	Size             string            `json:"size"`
+	RequiresAndroid  string            `json:"requires_android"`
+	ContentRating    string            `json:"content_rating"`
+	Installs         string            `json:"installs"`
+	PlainDescription map[string]string `json:"plain_description"`
+	HtmlDescription  map[string]string `json:"html_description"`
+	Developer        Developer         `json:"developer"`
 }
 
 func NewApp() *App {
@@ -36,6 +91,7 @@ func NewApp() *App {
 	app.Rating = make(map[string]int64, 5)
 	app.PlainDescription = map[string]string{}
 	app.HtmlDescription = map[string]string{}
+	app.Developer = Developer{}
 	return app
 }
 
@@ -43,6 +99,7 @@ func NewApp() *App {
 func parseApp(document *playStoreDocument, lang string) (*App, error) {
 	app := NewApp()
 	app.parseTitle(document)
+	app.parseIcon(document)
 	app.parseAverageRating(document)
 	app.parseReviews(document)
 	app.parseMetaInfo(document)
@@ -56,6 +113,12 @@ func parseApp(document *playStoreDocument, lang string) (*App, error) {
 func (app *App) parseTitle(document *playStoreDocument) {
 	title := document.Find(`.document-title`).Children().First().Text()
 	app.Title = strings.TrimSpace(title)
+}
+
+func (app *App) parseIcon(document *playStoreDocument) {
+	if icon, ok := document.Find(`.details-info .cover-image`).First().Attr("src"); ok {
+		app.Icon = icon
+	}
 }
 
 // Parses the user average rating.

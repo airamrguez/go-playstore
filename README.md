@@ -1,5 +1,7 @@
 # Google PlayStore
-A service to retrieve structured info from the _Google Play Store_.
+A package to query the _Google Play Store_.
+
+**NOTE**: This project is a work in progress.
 
 ## Installation
 This project requires Go1.1+.
@@ -8,12 +10,16 @@ This project requires Go1.1+.
 
 ## Examples
 
-There are mainly two actions:
- - **Look Up**:
- - **Search**:
+There are mainly two actions lookups and searchs.
+
+### Lookup example
+
+This example shows how to fetch data for the Candy Crush Saga in english, spanish
+and french.
 
 ```Go
 import (
+    "encoding/json"
     "fmt"
     "net/http"
     "net/url"
@@ -38,3 +44,44 @@ func main() {
     fmt.Println(string(json))
 }
 ```
+
+### Search example
+
+Search all applications that match a term. In this case we search for all
+applications matching candy.
+
+```Go
+import (
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "net/url"
+    "github.com/airamrguez/go-playstore"
+)
+
+func main() {
+    httpGet := func(url *url.URL) (*http.Response, error) {
+        fmt.Println(url.String())
+        return http.Get(url.String())
+    }
+    apps, err := playstore.Search(httpGet, "candy", 40, "en")
+    if err != nil {
+        panic(err)
+    }
+    json, err := json.Marshal(apps)
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(string(json))
+}
+```
+
+## Changelog
+
+ *  Look up with multilingual support.
+ *  Search a term.
+
+## TODO
+
+- [ ] Add tests
+- [ ] Add leadership

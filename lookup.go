@@ -22,7 +22,7 @@ func LookUp(httpGet httpGetFunc, appId string) (*App, error) {
 	if !appIdRegExp.MatchString(appId) {
 		return nil, ErrInvalidPackageId
 	}
-	res, err := doRequest(httpGet, appId, "en")
+	res, err := doLookUpRequest(httpGet, appId, "en")
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func MultiLookUp(httpGet httpGetFunc, appId string, languages []string) (*App, e
 		if lang == "en" {
 			continue
 		}
-		res, err := doRequest(httpGet, appId, lang)
+		res, err := doLookUpRequest(httpGet, appId, lang)
 		if err != nil {
 			continue
 		}
@@ -62,7 +62,7 @@ func MultiLookUp(httpGet httpGetFunc, appId string, languages []string) (*App, e
 	return app, nil
 }
 
-func doRequest(httpGet httpGetFunc, appId string, lang string) (*http.Response, error) {
+func doLookUpRequest(httpGet httpGetFunc, appId string, lang string) (*http.Response, error) {
 	url := getLookUpUrl(appId, lang)
 	return httpGet(url)
 }
