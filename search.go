@@ -2,7 +2,6 @@ package playstore
 
 import (
 	"errors"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"math"
 	"net/url"
@@ -24,7 +23,6 @@ func Search(httpGet httpGetFunc, term string, limit int, lang string) ([]*AppSlu
 		return results, ErrInvalidLimit
 	}
 	requests := int(math.Ceil(float64(limit) / MAX_RESULTS_PER_REQUEST))
-	fmt.Println("Peticiones: %d", requests)
 	urls := make([]*url.URL, requests)
 	for i := 0; i < requests; i++ {
 		urls[i] = getSearchUrl(term, strconv.Itoa(i*MAX_RESULTS_PER_REQUEST), MAX_RESULTS_PER_REQUEST, lang)
@@ -73,9 +71,7 @@ func parseAppList(document *playStoreDocument) ([]*AppSlug, error) {
 	apps := make([]*AppSlug, MAX_RESULTS_PER_REQUEST)
 	var err error
 	document.Find(`.card`).Each(func(i int, sel *goquery.Selection) {
-		fmt.Println("La i vale %d", i)
 		if apps[i], err = parseAppSlug(sel); err != nil {
-			fmt.Println("%s", err.Error())
 			return
 		}
 	})
