@@ -1,3 +1,6 @@
+// The playstore package lets you query the Google Play Store (Android Market).
+// It basically provides two ways of querying. LookUp lets you find an app by
+// id and the search method lets you find apps by search terms.
 package playstore
 
 import (
