@@ -192,7 +192,7 @@ func (app *App) parseRating(document *playStoreDocument) {
 	document.Find(`.rating-bar-container`).Each(func(i int, sel *goquery.Selection) {
 		score := ParseInteger(strings.TrimSpace(sel.Find(`.bar-label`).First().Text()))
 		rating := ParseInteger(strings.TrimSpace(sel.Find(`.bar-number`).First().Text()))
-		app.Rating[string(score)] = rating
+		app.Rating[strconv.Itoa(int(score))] = rating
 	})
 }
 
