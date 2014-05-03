@@ -100,6 +100,7 @@ func parseApp(document *playStoreDocument, lang string) (*App, error) {
 	app.parseTitle(document)
 	app.parseIcon(document)
 	app.parseOffersInApp(document)
+	app.parsePrice(document)
 	app.parseAverageRating(document)
 	app.parseReviews(document)
 	app.parseMetaInfo(document)
@@ -191,6 +192,19 @@ func (app *App) parseDeveloperName(document *playStoreDocument) {
 
 func (app *App) parseCategory(document *playStoreDocument) {
 	app.Developer.Name = strings.TrimSpace(document.Find(`.document-subtitle.primary`).Find(`[itemprop="name"]`).First().Text())
+}
+
+func (app *App) parsePrice(document *playStoreDocument) {
+	content, ok := document.Find(`.details-info button.price.buy meta[itemprop="price"]`).Attr("content")
+	if !ok {
+		app.Price = "unknown"
+		return
+	}
+	if content == "Install" {
+		app.Price = "0"
+	} else {
+		app.Price = content
+	}
 }
 
 func (app *App) parseOffersInApp(document *playStoreDocument) {
