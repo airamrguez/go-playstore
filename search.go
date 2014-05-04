@@ -15,8 +15,10 @@ var (
 )
 
 // Searchs by term. The request is sliced into limited requests by
-// MAX_RESULTS_PER_REQUEST. It returns a list with all apps found giving only
-// a
+// MAX_RESULTS_PER_REQUEST.
+// term is the query term.
+// limit amount of apps to return.
+// lang language in which the result is returned.
 func Search(httpGet httpGetFunc, term string, limit int, lang string) ([]*AppSlug, error) {
 	results := []*AppSlug{}
 	if limit <= 0 {

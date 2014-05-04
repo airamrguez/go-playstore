@@ -7,10 +7,14 @@ import (
 	"strings"
 )
 
+// DeveloperSlug represents all the developer information contained into
+// google's search results.
 type DeveloperSlug struct {
 	Name string `json:"name"`
 }
 
+// AppSlug contains all the information related to the app contained into
+// google's search results.
 type AppSlug struct {
 	Title         string        `json:"title"`
 	Icon          string        `json:"icon"`
@@ -19,12 +23,16 @@ type AppSlug struct {
 	Price         string        `json:"price"`
 }
 
+// Creates a new AppSlug struct to store the minimum information of an app
+// returned from a search method.
 func NewAppSlug() *AppSlug {
 	app := &AppSlug{}
 	app.Developer = DeveloperSlug{}
 	return app
 }
 
+// This methods collects all the fields returned from a search that are
+// contained into what google call cards in the Google Play Store.
 func parseAppSlug(sel *goquery.Selection) (*AppSlug, error) {
 	app := NewAppSlug()
 	app.parseTitle(sel)
@@ -34,39 +42,49 @@ func parseAppSlug(sel *goquery.Selection) (*AppSlug, error) {
 	return app, nil
 }
 
+// Parses the application title returned from a search.
 func (app *AppSlug) parseTitle(sel *goquery.Selection) {
 	app.Title = strings.TrimSpace(sel.Find(`.title`).First().Text())
 }
 
+// Parses the application icon returned from a search.
 func (app *AppSlug) parseIcon(sel *goquery.Selection) {
 	if icon, ok := sel.Find(`.cover-image`).First().Attr("src"); ok {
 		app.Icon = icon
 	}
 }
 
+// Parses the application developer name returned from a search.
 func (app *AppSlug) parseDeveloper(sel *goquery.Selection) {
 	app.Developer.Name = strings.TrimSpace(sel.Find(`.subtitle`).First().Text())
 }
 
+// Parses the application average rating returned from a search. In case there's
+// no width attribute let's suppose that google is omitting the with attribute.
 func (app *AppSlug) parseAverageRating(sel *goquery.Selection) {
 	width, ok := sel.Find(`.current-rating`).First().Attr("style")
 	if !ok {
+		app.AverageRating = 0
 		return
 	}
 	re := regexp.MustCompile(`width:\s*([0-9.]+)%`)
 	app.AverageRating = ParseFloat(re.ReplaceAllString(width, "$1"))
 }
 
+// Parses the application price returned from a search.
 func (app *AppSlug) parsePrice(sel *goquery.Selection) {
 	app.Price = strings.TrimSpace(sel.Find(`.price-container button.price`).First().Text())
 }
 
+// Extends the developer slug information by adding the developer mail and website.
 type Developer struct {
 	DeveloperSlug
 	Email   string `json:"email"`
 	Website string `json:"website"`
 }
 
+// App struct represents all the information contained into an AppSlug and the
+// rest of the fields returned from a lookup.
 type App struct {
 	AppSlug
 	Category         string            `json:"category"`
@@ -85,6 +103,7 @@ type App struct {
 	Developer        Developer         `json:"developer"`
 }
 
+// Creates a new App.
 func NewApp() *App {
 	app := &App{}
 	app.Rating = make(map[string]int64, 5)
@@ -94,7 +113,7 @@ func NewApp() *App {
 	return app
 }
 
-// Looks through the document to extract the app info.
+// Looks through the document extracting all the app information.
 func parseApp(document *playStoreDocument, lang string) (*App, error) {
 	app := NewApp()
 	app.parseTitle(document)
@@ -112,11 +131,13 @@ func parseApp(document *playStoreDocument, lang string) (*App, error) {
 	return app, nil
 }
 
+// Parses the application title returned from a lookup.
 func (app *App) parseTitle(document *playStoreDocument) {
 	title := document.Find(`.document-title`).Children().First().Text()
 	app.Title = strings.TrimSpace(title)
 }
 
+// Parses the application icon returned from a lookup.
 func (app *App) parseIcon(document *playStoreDocument) {
 	if icon, ok := document.Find(`.details-info .cover-image`).First().Attr("src"); ok {
 		app.Icon = icon
@@ -142,6 +163,10 @@ func (app *App) parseReviews(document *playStoreDocument) {
 	app.Reviews = -1
 }
 
+// A more detailed view of the app is inside a container with the class
+// .meta-info. Here we collect the last time the app was updated, it's current
+// size, the number of installations, the minium Android required version,
+// content rating and the e-mail and the website of the developer.
 func (app *App) parseMetaInfo(document *playStoreDocument) {
 	document.Find(`.meta-info`).Each(func(i int, sel *goquery.Selection) {
 		title := strings.TrimSpace(sel.Find(`.title`).Text())
@@ -186,10 +211,12 @@ func (app *App) parseScreenshotUrls(document *playStoreDocument) {
 	})
 }
 
+// Parses the developer name returned from a lookup.
 func (app *App) parseDeveloperName(document *playStoreDocument) {
 	app.Category = strings.TrimSpace(document.Find(`.category`).Find(`[itemprop="genre"]`).First().Text())
 }
 
+// Parses the category returned from a lookup.
 func (app *App) parseCategory(document *playStoreDocument) {
 	app.Developer.Name = strings.TrimSpace(document.Find(`.document-subtitle.primary`).Find(`[itemprop="name"]`).First().Text())
 }
@@ -261,6 +288,8 @@ func (app *App) parseContactDeveloper(sel *goquery.Selection) {
 	})
 }
 
+// Checks if the current document corresponds to an application. In case there's
+// no such thing it returns false.
 func isValidApp(document *playStoreDocument) bool {
 	return document.Find("title").First().Text() != "Not Found"
 }

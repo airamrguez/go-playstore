@@ -9,6 +9,7 @@ import (
 	"net/url"
 )
 
+// Prototype for an http request.
 type httpGetFunc func(url *url.URL) (*http.Response, error)
 
 type playStoreDocument struct {
@@ -26,6 +27,7 @@ func NewPlayStoreDocument(response *http.Response) (*playStoreDocument, error) {
 	return &playStoreDocument{document}, nil
 }
 
+// A wrapper for the goquery find method.
 func (document *playStoreDocument) Find(selection string) (s *goquery.Selection) {
 	return document.document.Find(selection)
 }
